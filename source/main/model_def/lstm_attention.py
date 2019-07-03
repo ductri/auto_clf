@@ -1,0 +1,80 @@
+import torch
+from torch import nn, optim
+
+from model_def.encoder import Encoder, FlattenHiddenLSTM, create_my_embedding
+from model_def.attention import Attention
+
+
+class LSTMAttention(nn.Module):
+
+    def __init__(self, enc_embedding_weight):
+        super(LSTMAttention, self).__init__()
+        self.enc_embedding = create_my_embedding(enc_embedding_weight)
+        self.encoder = Encoder(self.enc_embedding, is_bidirectional=True)
+
+        __temp = 512
+        self.attention = Attention(enc_output_size=self.encoder.lstm_size*2, dec_output_size=__temp)
+
+        self.flatten_hidden_lstm = FlattenHiddenLSTM(self.encoder.lstm_num_layer, self.encoder.is_bidirectional)
+        self.fc1 = nn.Linear(in_features=self.encoder.lstm_size * 2 * self.encoder.lstm_num_layer * 2, out_features=__temp)
+        self.fc2 = nn.Linear(in_features=self.encoder.lstm_size*2+__temp, out_features=__temp)
+        self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.3)
+        self.output_mapping = nn.Linear(in_features=__temp, out_features=2)
+        self.softmax = nn.Softmax(dim=1)
+
+        self.xent = None
+        self.optimizer = None
+        self.loss_class_weight = torch.tensor([1., 1.])
+
+    def __inner_forward(self, word_input, *args):
+        """
+
+        :param word_input: shape == (batch, seq_len)
+        :param args:
+        :return: logits Tensor shape == (batch, no_class)
+        """
+        enc_outputs, h_c = self.encoder(word_input)
+        h_c = self.flatten_hidden_lstm(h_c[0], h_c[1])
+        inner = torch.cat(h_c, dim=1)
+        inner = self.dropout(inner)
+        inner = self.fc1(inner)
+        inner, _ = self.attention(enc_outputs, inner)
+        inner = self.fc2(inner)
+        inner = self.relu(inner)
+        output = self.output_mapping(inner)
+        return output
+
+    def forward(self, word_input, *args):
+        logits = self.__inner_forward(word_input)
+        return self.softmax(logits)
+
+    def train(self, mode=True):
+        if self.xent is None:
+            # Never use `mean`, it does not care about my weight
+            self.xent = nn.CrossEntropyLoss(reduction='none', weight=self.loss_class_weight)
+        if self.optimizer is None:
+            self.optimizer = optim.Adam(self.parameters(), lr=1e-3)
+        super().train(mode)
+
+    def get_loss(self, word_input, target):
+        """
+
+        :param word_input: shape == (batch, seq_len)
+        :param target: shape == (batch)
+        :return:
+        """
+        logits = self.__inner_forward(word_input)
+        loss = self.xent(logits, target)
+        loss = loss.mean(dim=0)
+        return loss
+
+    def train_batch(self, word_input, target):
+        self.train()
+        self.optimizer.zero_grad()
+        loss = self.get_loss(word_input, target)
+        loss.backward()
+        self.optimizer.step()
+        return loss.item()
+
+
