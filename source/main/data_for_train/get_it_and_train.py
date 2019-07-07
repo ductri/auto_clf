@@ -6,7 +6,8 @@ from torch.utils.data import DataLoader
 import torch
 from naruto_skills.new_voc import Voc
 
-from data_for_train.not_shared_pool import PoolDocs
+# from data_for_train.not_shared_pool import PoolDocs
+from data_for_train.shared_pool import PoolDocs
 from data_for_train.index_dataset import IndexDataset
 from data_for_train.positive_dataset import PositiveDataset
 from data_for_train.full_dataset import FullDataset

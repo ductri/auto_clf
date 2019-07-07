@@ -12,18 +12,13 @@ ROOT = '/source/'
 
 
 class PositiveDataset(Dataset):
-    def __init__(self, path_to_file):
+    def __init__(self, list_data):
         super(PositiveDataset, self).__init__()
-
-        df = pd.read_csv(path_to_file, usecols=['mention'])
-        df.dropna(inplace=True)
-        df.drop_duplicates(inplace=True)
-
-        self.mentions = list(df['mention'])
+        self.mentions = list(list_data)
 
     def __len__(self):
         return len(self.mentions)
 
     def __getitem__(self, idx):
-        return self.mentions[idx]
+        return self.mentions[idx], 1
 

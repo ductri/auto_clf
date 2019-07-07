@@ -38,7 +38,10 @@ class PoolDocs(Dataset):
         df.dropna(inplace=True)
         df.drop_duplicates(inplace=True)
         logging.info('Temp total: %s', df.shape[0])
-        self.mentions = list(df['mention'].sample(int(max_size), random_state=RANDOM_STATE, replace=True).drop_duplicates())
+        if max_size <= df.shape[0]:
+            self.mentions = list(df['mention'].sample(int(max_size), random_state=RANDOM_STATE))
+        else:
+            self.mentions = list(df['mention'])
 
     def __len__(self):
         return len(self.mentions)
