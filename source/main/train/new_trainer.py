@@ -1,6 +1,5 @@
 import logging
 import time
-from datetime import datetime
 
 import torch
 import numpy as np
@@ -57,19 +56,19 @@ def prepare_dataset(name):
 
     ds = TripletDataset(pos, pool)
     data_loader = DataLoader(dataset=ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=0, collate_fn=collate_fn)
-    return data_loader
+    return data_loader, pos, pool
 
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     root_dir = '/source/main/train/output/'
     # experiment_name = datetime.strftime(datetime.now(), '%Y-%m-%dT%H:%M:%S')
-    experiment_name = '3.0'
+    experiment_name = '5.1'
 
     # Dataset prepare
     voc = Voc.load('/source/main/vocab/output/voc.pkl')
-    train_loader = prepare_dataset('train')
-    eval_loader = prepare_dataset('eval')
+    train_loader, _, _ = prepare_dataset('train')
+    eval_loader, eval_pos, eval_pool = prepare_dataset('eval')
 
     core_model = SiameseModelCore(voc.get_embedding_weights())
     model = SiameseModel(core_model)
@@ -89,7 +88,7 @@ if __name__ == '__main__':
     training_checker = TrainingChecker(model, root_dir=root_dir+'/saved_models/' + experiment_name, init_score=-10000)
 
     step = 0
-    num_epochs = 1
+    num_epochs = 2
     total = num_epochs * len(train_loader)
     for epoch_idx in range(num_epochs):
         for inputs in train_loader:
@@ -114,3 +113,4 @@ if __name__ == '__main__':
                     eval_logger.add_scalar('eval/loss_std', np.std(eval_losses), step)
                     eval_logger.add_scalar('eval/duration', time.time()-eval_start, step)
                     training_checker.update(-eval_loss_mean, step)
+

@@ -4,7 +4,7 @@ from torch.nn import functional as F
 
 
 class SiameseModel(nn.Module):
-    MARGIN = 10
+    MARGIN = 1
 
     def __init__(self, core_model):
         super(SiameseModel, self).__init__()
@@ -45,7 +45,7 @@ class SiameseModel(nn.Module):
         o_a = torch.cat((o_p_o_n[1:positive_size], o_p_o_n[0:1]), dim=0)
         o_p = o_p_o_n[:positive_size]
         o_n = o_p_o_n[positive_size:]
-        loss = SiameseModel.my_distance(o_a, o_p) - SiameseModel.my_distance(o_a, o_n)+ SiameseModel.MARGIN
+        loss = SiameseModel.my_distance(o_a, o_p) - SiameseModel.my_distance(o_a, o_n) + SiameseModel.MARGIN
         loss = F.relu(loss)
         loss = torch.mean(loss, dim=0)
         return loss
