@@ -8,6 +8,7 @@ import pandas as pd
 from naruto_skills.new_voc import Voc
 from torch.utils.data import DataLoader, Dataset
 from naruto_skills.dl_logging import DLTBHandler, DLLoggingHandler, DLLogger
+from tqdm import tqdm
 
 from model_def.siamese_model_3 import SiameseModel
 from model_def.siamese_core import SiameseModelCore
@@ -96,10 +97,12 @@ if __name__ == '__main__':
             step += 1
             inputs = [i.to(device) for i in inputs]
             l = model.train_batch(inputs[0], inputs[1])
-            if step % 100 == 0:
-                train_logger.handlers[0].add_scalar('Current', step/total)
+
+            if step % 10 == 0:
+                train_logger.handlers[0].add_scalar('progress', step / total, step)
                 train_logger.add_scalar('train/loss', l, step)
                 train_logger.add_scalar('train/duration', time.time() - start, step)
+
             if step % 200 == 0:
                 eval_start = time.time()
                 model.eval()
