@@ -14,7 +14,10 @@ class SiameseModelCore(nn.Module):
         self.fc1 = nn.Linear(in_features=1200, out_features=100)
         self.fc2 = nn.Linear(in_features=100, out_features=10)
 
-        self.input_embedding = nn.Embedding.from_pretrained(torch.from_numpy(embedding_weight).float(), freeze=False)
+        if embedding_weight is not None:
+            self.input_embedding = nn.Embedding.from_pretrained(torch.from_numpy(embedding_weight).float(), freeze=False)
+        else:
+            self.input_embedding = nn.Embedding(num_embeddings=20002,embedding_dim=300)
 
         self.my_softmax = nn.Softmax(dim=1)
 

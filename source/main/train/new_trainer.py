@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, Dataset
 from naruto_skills.dl_logging import DLTBHandler, DLLoggingHandler, DLLogger
 from tqdm import tqdm
 
-from model_def.siamese_model_3 import SiameseModel
+from model_def.siamese_model_4 import SiameseModel
 from model_def.siamese_core import SiameseModelCore
 from data_for_train.index_dataset import IndexDataset
 from naruto_skills.training_checker import TrainingChecker
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     root_dir = '/source/main/train/output/'
     # experiment_name = datetime.strftime(datetime.now(), '%Y-%m-%dT%H:%M:%S')
-    experiment_name = '5.1'
+    experiment_name = '6.2'
 
     # Dataset prepare
     voc = Voc.load('/source/main/vocab/output/voc.pkl')
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     training_checker = TrainingChecker(model, root_dir=root_dir+'/saved_models/' + experiment_name, init_score=-10000)
 
     step = 0
-    num_epochs = 2
+    num_epochs = 1
     total = num_epochs * len(train_loader)
     for epoch_idx in range(num_epochs):
         for inputs in train_loader:
@@ -113,4 +113,4 @@ if __name__ == '__main__':
                     eval_logger.add_scalar('eval/loss_std', np.std(eval_losses), step)
                     eval_logger.add_scalar('eval/duration', time.time()-eval_start, step)
                     training_checker.update(-eval_loss_mean, step)
-
+    print(training_checker.best())
