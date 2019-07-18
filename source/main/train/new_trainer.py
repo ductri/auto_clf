@@ -39,7 +39,7 @@ def prepare_dataset(name):
         data = [torch.from_numpy(col) for col in data]
         return data
     MAX_LENGTH = 100
-    BATCH_SIZE = 256
+    BATCH_SIZE = 200
     df_pool = pd.read_csv('/source/main/data_for_train/output/%s/pool.csv' % name, nrows=1e6)
     df_pool.dropna(inplace=True, subset=['mention'])
     df_pool.drop_duplicates(inplace=True, subset=['mention'])
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     root_dir = '/source/main/train/output/'
     # experiment_name = datetime.strftime(datetime.now(), '%Y-%m-%dT%H:%M:%S')
-    experiment_name = '6.2'
+    experiment_name = '10.2'
 
     # Dataset prepare
     voc = Voc.load('/source/main/vocab/output/voc.pkl')
