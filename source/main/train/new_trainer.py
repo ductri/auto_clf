@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, Dataset
 from naruto_skills.dl_logging import DLTBHandler, DLLoggingHandler, DLLogger
 from tqdm import tqdm
 
-from model_def.siamese_model_4 import SiameseModel
+from model_def.siamese_model_7 import SiameseModel
 from model_def.siamese_core import SiameseModelCore
 from data_for_train.index_dataset import IndexDataset
 from naruto_skills.training_checker import TrainingChecker
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     root_dir = '/source/main/train/output/'
     # experiment_name = datetime.strftime(datetime.now(), '%Y-%m-%dT%H:%M:%S')
-    experiment_name = '10.6'
+    experiment_name = '13.1'
 
     # Dataset prepare
     voc = Voc.load('/source/main/vocab/output/voc.pkl')

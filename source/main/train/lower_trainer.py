@@ -16,8 +16,9 @@ from naruto_skills.training_checker import TrainingChecker
 
 
 class TripletDataset(Dataset):
-    def __init__(self, pos, pool):
+    def __init__(self, anchor, pos, pool):
         super(TripletDataset, self).__init__()
+        self.anchor = anchor
         self.pos = pos
         self.pool = pool
         self.len_pos = len(pos)
@@ -26,7 +27,7 @@ class TripletDataset(Dataset):
         return len(self.pool)
 
     def __getitem__(self, idx):
-        return self.pos[idx % self.len_pos], self.pool[idx]
+        return self.anchor[idx % self.len_pos], self.pos[idx % self.len_pos], self.pool[idx]
 
 
 def prepare_dataset(name):
@@ -51,10 +52,13 @@ def prepare_dataset(name):
     df_pos.dropna(inplace=True, subset=['mention'])
     df_pos.drop_duplicates(inplace=True, subset=['mention'])
 
+    df_anchor = df_pos.sample(df_pos.shape[0])
+    anchor = IndexDataset(voc, list(df_anchor['mention']), equal_length=MAX_LENGTH)
+
     logging.info(df_pos.shape)
     pos = IndexDataset(voc, list(df_pos['mention']), equal_length=MAX_LENGTH)
 
-    ds = TripletDataset(pos, pool)
+    ds = TripletDataset(anchor, pos, pool)
     data_loader = DataLoader(dataset=ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=0, collate_fn=collate_fn)
     return data_loader, pos, pool
 
@@ -62,8 +66,7 @@ def prepare_dataset(name):
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     root_dir = '/source/main/train/output/'
-    # experiment_name = datetime.strftime(datetime.now(), '%Y-%m-%dT%H:%M:%S')
-    experiment_name = '10.6'
+    experiment_name = '11.1'
 
     # Dataset prepare
     voc = Voc.load('/source/main/vocab/output/voc.pkl')
@@ -95,7 +98,7 @@ if __name__ == '__main__':
             start = time.time()
             step += 1
             inputs = [i.to(device) for i in inputs]
-            l = model.train_batch(inputs[0], inputs[1])
+            l = model.train_batch(inputs[0], inputs[1], inputs[2])
 
             if step % 10 == 0:
                 train_logger.handlers[0].add_scalar('progress', step / total, step)
@@ -106,7 +109,12 @@ if __name__ == '__main__':
                 eval_start = time.time()
                 model.eval()
                 with torch.no_grad():
-                    eval_losses = [model.get_loss(inputs[0].to(device), inputs[1].to(device)) for inputs in tqdm(eval_loader)]
+                    eval_losses = []
+                    for inputs in tqdm(eval_loader):
+                        inputs = [item.to(device) for item in inputs]
+                        inputs = model(inputs)
+                        loss = SiameseModel.triplet_loss(*inputs)
+                        eval_losses.append(loss)
                     eval_losses = [v.item() for v in eval_losses]
                     eval_loss_mean = np.mean(eval_losses)
                     eval_logger.add_scalar('eval/loss', eval_loss_mean, step)
