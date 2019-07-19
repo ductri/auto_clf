@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, Dataset
 from naruto_skills.dl_logging import DLTBHandler, DLLoggingHandler, DLLogger
 from tqdm import tqdm
 
-from model_def.siamese_model_4 import SiameseModel
+from model_def.siamese_model_ import SiameseModel
 from model_def.siamese_core import SiameseModelCore
 from data_for_train.index_dataset import IndexDataset
 from naruto_skills.training_checker import TrainingChecker
