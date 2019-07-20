@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader, Dataset
 from naruto_skills.dl_logging import DLTBHandler, DLLoggingHandler, DLLogger
 from tqdm import tqdm
 
-from model_def.siamese_model_7 import SiameseModel
+from model_def.siamese_model_8 import SiameseModel
 from model_def.siamese_core import SiameseModelCore
 from data_for_train.index_dataset import IndexDataset
 from naruto_skills.training_checker import TrainingChecker
@@ -39,7 +39,7 @@ def prepare_dataset(name):
         data = [torch.from_numpy(col) for col in data]
         return data
     MAX_LENGTH = 100
-    BATCH_SIZE = 200
+    BATCH_SIZE = 100
     df_pool = pd.read_csv('/source/main/data_for_train/output/%s/pool.csv' % name, nrows=1e6)
     df_pool.dropna(inplace=True, subset=['mention'])
     df_pool.drop_duplicates(inplace=True, subset=['mention'])
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     root_dir = '/source/main/train/output/'
     # experiment_name = datetime.strftime(datetime.now(), '%Y-%m-%dT%H:%M:%S')
-    experiment_name = '13.1'
+    experiment_name = '15.1'
 
     # Dataset prepare
     voc = Voc.load('/source/main/vocab/output/voc.pkl')
