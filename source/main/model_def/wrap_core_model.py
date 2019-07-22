@@ -32,7 +32,7 @@ class WrapSiameseModelCore(nn.Module):
             # Never use `mean`, it does not care about my weight
             self.xent = nn.CrossEntropyLoss(reduction='none')
         if self.optimizer is None:
-            self.optimizer = optim.Adam(self.parameters(), lr=1e-3)
+            self.optimizer = optim.Adam(self.parameters(), lr=1e-5)
         super().train(mode)
 
     def get_loss(self, word_input, target):
